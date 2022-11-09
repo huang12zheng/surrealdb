@@ -15,15 +15,11 @@ extern crate log;
 #[macro_use]
 mod mac;
 
-mod cli;
+pub mod cli;
 mod cnf;
-mod dbs;
+pub mod dbs;
 mod env;
 mod err;
 mod iam;
 mod net;
 mod rpc;
-
-fn main() {
-	cli::init(); // Initiate the command line
-}

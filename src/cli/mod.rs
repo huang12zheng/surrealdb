@@ -1,7 +1,7 @@
-mod backup;
-mod config;
-mod export;
-mod import;
+pub mod backup;
+pub mod config;
+pub mod export;
+pub mod import;
 mod log;
 mod sql;
 mod start;
@@ -108,7 +108,26 @@ fn key_valid(v: &str) -> Result<(), String> {
 	}
 }
 
-pub fn init() {
+pub fn init(args: Vec<String>) {
+	let setup = get_setup();
+	let matches = setup.get_matches_from(args);
+
+	let output = match matches.subcommand() {
+		Some(("sql", m)) => sql::init(m),
+		Some(("start", m)) => start::init(m),
+		Some(("backup", m)) => backup::init(m),
+		Some(("import", m)) => import::init(m),
+		Some(("export", m)) => export::init(m),
+		Some(("version", m)) => version::init(m),
+		_ => Ok(()),
+	};
+
+	if let Err(e) = output {
+		error!(target: LOG, "{}", e);
+	}
+}
+
+pub fn get_setup() -> clap::App<'static> {
 	let setup = Command::new("SurrealDB command-line interface and server")
 		.about(INFO)
 		.before_help(LOGO)
@@ -448,19 +467,5 @@ pub fn init() {
 			),
 	);
 
-	let matches = setup.get_matches();
-
-	let output = match matches.subcommand() {
-		Some(("sql", m)) => sql::init(m),
-		Some(("start", m)) => start::init(m),
-		Some(("backup", m)) => backup::init(m),
-		Some(("import", m)) => import::init(m),
-		Some(("export", m)) => export::init(m),
-		Some(("version", m)) => version::init(m),
-		_ => Ok(()),
-	};
-
-	if let Err(e) = output {
-		error!(target: LOG, "{}", e);
-	}
+	setup
 }
